@@ -1,0 +1,12 @@
+fetch_raw_data:
+  save_path: "data/raw/"
+  period: "400d"
+  interval: "1d"
+  start_date: "2022-01-01"
+preprocess_data:
+  raw_data_path: "data/raw/"
+  save_path: "data/processed/"
+balance_data:
+  processed_data_path: "data/processed/"
+  balanced_data_path: "data/balanced/"
+  strategy: "oversample"

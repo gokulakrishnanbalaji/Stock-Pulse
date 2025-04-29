@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPulse Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            transition: background-color 0.5s ease;
+        }
+        .bg-light-green {
+            background-color: rgba(220, 252, 231, 0.9);
+        }
+        .bg-light-red {
+            background-color: rgba(254, 202, 202, 0.9);
+        }
+        .bg-neutral {
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .autocomplete-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .autocomplete-item:hover {
+            background-color: #f3f4f6;
+        }
+        .autocomplete-item.selected {
+            background-color: #e0e7ff;
+        }
+    </style>
+</head>
+<body class="bg-neutral flex flex-col min-h-screen">
+    <header class="bg-blue-900 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">StockPulse Predictor</h1>
+            <nav>
+                <a href="#" class="text-white hover:text-blue-200 mx-2">Home</a>
+                <a href="#" class="text-white hover:text-blue-200 mx-2">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-6">Predict Stock Movement</h2>
+            <p class="text-gray-600 text-center mb-6">Type a company name to get real-time stock movement predictions.</p>
+
+            <div class="flex flex-col items-center space-y-4">
+                <div class="autocomplete-container">
+                    <input
+                        id="companyInput"
+                        type="text"
+                        placeholder="Enter company name..."
+                        class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 transition duration-300"
+                        autocomplete="off"
+                    />
+                    <div id="autocompleteDropdown" class="autocomplete-dropdown hidden"></div>
+                </div>
+
+                <button id="predictButton" onclick="predict()" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 hover-scale transition duration-300">Predict</button>
+
+                <div id="predictionResult" class="text-xl font-semibold text-center mt-6"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-blue-900 text-white text-center p-4">
+        <p>© 2025 StockPulse Predictor. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const companies = [
+            'NATCOPHARM',
+            'ITC',
+            'DRREDDY',
+            'KTKBANK',
+            'IDFCFIRSTB',
+            'GOLDBEES',
+            'SOUTHBANK',
+            'TATAMOTORS'
+        ];
+
+        const companyInput = document.getElementById('companyInput');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        let selectedIndex = -1;
+
+        function renderSuggestions(filteredCompanies) {
+            autocompleteDropdown.innerHTML = '';
+            if (filteredCompanies.length === 0) {
+                autocompleteDropdown.classList.add('hidden');
+                return;
+            }
+
+            filteredCompanies.forEach((company, index) => {
+                const item = document.createElement('div');
+                item.className = `autocomplete-item ${index === selectedIndex ? 'selected' : ''}`;
+                item.textContent = company;
+                item.addEventListener('click', () => {
+                    companyInput.value = company;
+                    autocompleteDropdown.classList.add('hidden');
+                    selectedIndex = -1;
+                });
+                autocompleteDropdown.appendChild(item);
+            });
+            autocompleteDropdown.classList.remove('hidden');
+        }
+
+        companyInput.addEventListener('input', () => {
+            const query = companyInput.value.toUpperCase();
+            selectedIndex = -1;
+            const filtered = companies.filter(company =>
+                company.toUpperCase().includes(query)
+            );
+            renderSuggestions(filtered);
+        });
+
+        companyInput.addEventListener('focus', () => {
+            const query = companyInput.value.toUpperCase();
+            const filtered = query
+                ? companies.filter(company => company.toUpperCase().includes(query))
+                : companies;
+            renderSuggestions(filtered);
+        });
+
+        companyInput.addEventListener('click', () => {
+            const query = companyInput.value.toUpperCase();
+            const filtered = query
+                ? companies.filter(company => company.toUpperCase().includes(query))
+                : companies;
+            renderSuggestions(filtered);
+        });
+
+        companyInput.addEventListener('keydown', (e) => {
+            const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex + 1) % items.length;
+                renderSuggestions(
+                    companyInput.value
+                        ? companies.filter(company =>
+                              company.toUpperCase().includes(companyInput.value.toUpperCase())
+                          )
+                        : companies
+                );
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+                renderSuggestions(
+                    companyInput.value
+                        ? companies.filter(company =>
+                              company.toUpperCase().includes(companyInput.value.toUpperCase())
+                          )
+                        : companies
+                );
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                companyInput.value = items[selectedIndex].textContent;
+                autocompleteDropdown.classList.add('hidden');
+                selectedIndex = -1;
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!companyInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.classList.add('hidden');
+                selectedIndex = -1;
+            }
+        });
+
+        async function predict() {
+            const companyName = companyInput.value.toUpperCase();
+            const resultDiv = document.getElementById('predictionResult');
+            const predictButton = document.getElementById('predictButton');
+            const body = document.body;
+
+            if (!companies.includes(companyName)) {
+                resultDiv.textContent = 'Please select a valid company!';
+                resultDiv.className = 'text-xl font-semibold text-center mt-6 text-gray-600 fade-in';
+                body.classList.remove('bg-light-green', 'bg-light-red');
+                body.classList.add('bg-neutral');
+                return;
+            }
+
+            resultDiv.textContent = '';
+            predictButton.textContent = 'Predicting';
+            predictButton.classList.add('loading');
+            predictButton.disabled = true;
+            body.classList.remove('bg-light-green', 'bg-light-red');
+            body.classList.add('bg-neutral');
+
+            try {
+                const response = await fetch('http://localhost:8000/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ company_name: companyName })
+                });
+
+                const data = await response.json();
+                resultDiv.className = 'text-xl font-semibold text-center mt-6 fade-in';
+
+                if (data.prediction === 1) {
+                    resultDiv.textContent = `${data.company_name}: 📈 UP!`;
+                    resultDiv.classList.add('text-green-600');
+                    body.classList.add('bg-light-green');
+                } else if (data.prediction === 0) {
+                    resultDiv.textContent = `${data.company_name}: 📉 DOWN!`;
+                    resultDiv.classList.add('text-red-600');
+                    body.classList.add('bg-light-red');
+                } else {
+                    resultDiv.textContent = 'Error fetching prediction!';
+                    resultDiv.classList.add('text-gray-600');
+                    body.classList.add('bg-neutral');
+                }
+            } catch (error) {
+                resultDiv.textContent = 'Network error occurred!';
+                resultDiv.className = 'text-xl font-semibold text-center mt-6 text-gray-600 fade-in';
+                body.classList.add('bg-neutral');
+            } finally {
+                predictButton.textContent = 'Predict';
+                predictButton.classList.remove('loading');
+                predictButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+
+0 18 * * 5 /Users/gokul/IITM Projects/MLOPS /AI Application/run_pipeline.sh >> /Users/gokul/IITM Projects/MLOPS /AI Application/cron_job.log 2>&1
+
+pkill -f "python src/backend.py"

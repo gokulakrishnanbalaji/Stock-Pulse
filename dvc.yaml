@@ -1,0 +1,53 @@
+stages:
+  fetch_raw_data:
+    desc: Fetch raw data from source
+    cmd: python src/fetch_data.py --save_path ${fetch_raw_data.save_path} --period
+      ${fetch_raw_data.period} --interval ${fetch_raw_data.interval} --start_date
+      ${fetch_raw_data.start_date}
+    deps:
+    - src/fetch_data.py
+    params:
+    - fetch_raw_data.interval
+    - fetch_raw_data.period
+    - fetch_raw_data.save_path
+    - fetch_raw_data.start_date
+    outs:
+    - data/raw
+  preprocess_data:
+    desc: Preprocess raw data
+    cmd: python src/preprocess.py --raw_data_path ${preprocess_data.raw_data_path}
+      --save_path ${preprocess_data.save_path}
+    deps:
+    - data/raw
+    - src/preprocess.py
+    params:
+    - preprocess_data.raw_data_path
+    - preprocess_data.save_path
+    outs:
+    - data/processed
+  balance_data:
+    desc: Balance processed data
+    cmd: python src/balance_data.py --processed_data_path ${balance_data.processed_data_path}
+      --balanced_data_path ${balance_data.balanced_data_path} --strategy ${balance_data.strategy}
+    deps:
+    - data/processed
+    - src/balance_data.py
+    params:
+    - balance_data.balanced_data_path
+    - balance_data.processed_data_path
+    - balance_data.strategy
+    outs:
+    - data/balanced
+  train_model:
+    desc: Train model on balanced data
+    cmd: python src/train.py
+    deps:
+    - data/balanced
+    - src/train.py
+
+  evaluate_model:
+    cmd: 'python src/eval.py'
+    deps:
+    - data/balanced/X.npy
+    - data/balanced/y.npy
+    - src/eval.py
