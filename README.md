@@ -1,4 +1,5 @@
 Install required requirements in python env
+(create venv, dont install the dependencies in your global python interpreter)
 ```bash
 pip install -r requirements.txt
 ```
