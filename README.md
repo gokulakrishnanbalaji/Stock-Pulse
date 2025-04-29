@@ -37,7 +37,7 @@ open  `index.html` file inside `ui` folder in a brower to see UI
 
 Perform unit testing
 ```bash
-python src/test.py
+pytest src/test.py -v
 ```
 
 Stop the backend fast api server (if you wish to stop running the app)
