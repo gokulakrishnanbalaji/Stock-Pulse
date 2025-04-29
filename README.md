@@ -5,6 +5,7 @@ create venv, dont install the dependencies in your global python interpreter
 only use this if you're using conda
 ```bash
 conda create --name stockpulse  python=3.9 -y
+conda activate stockpulse
 ```
 
 Install required requirements in python env
