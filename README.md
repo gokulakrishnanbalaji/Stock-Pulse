@@ -20,7 +20,7 @@ dvc init
 
 Make the sh file executable
 ```bash
-chmod +777 run_pipeline.sh
+chmod 777 run_pipeline.sh
 ```
 
 Run the pipeline
