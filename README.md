@@ -46,3 +46,8 @@ pkill -f "python src/backend.py"
 ```
 
 use the command inside `cron.txt ` to set it up as a cron job.
+
+# High level design
+
+<img width="1072" alt="image" src="https://github.com/user-attachments/assets/1c50a882-5fa2-472e-9adc-d0ec1383cc97" />
+
